@@ -1,0 +1,14 @@
+import {Account, Client, Databases} from 'react-native-appwrite'
+
+const client = new Client().setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT ?? '').setProject(process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID ?? '').setPlatform(process.env.EXPO_PUBLIC_APPWRITE_PLATFORM ?? '')
+
+
+export const account = new Account(client);
+
+// Register User
+// account.create(ID.unique(), 'me@example.com', 'password', 'Jane Doe')
+//     .then(function (response) {
+//         console.log(response);
+//     }, function (error) {
+//         console.log(error);
+//     });
