@@ -4,11 +4,9 @@ const client = new Client().setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOIN
 
 
 export const account = new Account(client);
+export const databases = new Databases(client);
 
-// Register User
-// account.create(ID.unique(), 'me@example.com', 'password', 'Jane Doe')
-//     .then(function (response) {
-//         console.log(response);
-//     }, function (error) {
-//         console.log(error);
-//     });
+export const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DB_ID ?? '';
+export const HABIT_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_HABIT_COLLECTION_ID ?? '';
+
+
