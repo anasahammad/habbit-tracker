@@ -1,17 +1,39 @@
 import { Link } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
-import { Button } from "react-native-paper";
+import { StyleSheet,  View } from "react-native";
+import { Button, Text, } from "react-native-paper";
 import { useAuth } from "../lib/auth-context";
+import { DATABASE_ID, databases, HABIT_COLLECTION_ID } from "../lib/appwrite";
+import { Query } from "react-native-appwrite";
+import { useEffect, useState } from "react";
+import { Habit } from "../types/database.type";
 
 export default function Index() {
-  const {signOut} = useAuth()
+  const {signOut, user} = useAuth()
+  const [habits, setHabits] = useState<Habit[]>()
+
+  useEffect(()=>{
+    fetchHabits()
+  }, [user])
+  const fetchHabits =async  ()=>{
+    try {
+       const response =  await databases.listDocuments(DATABASE_ID, HABIT_COLLECTION_ID, [Query.equal("user_id", user?.$id ?? '')])
+
+       console.log('response', response)
+       setHabits(response.documents as Habit[])
+    } catch (error) {
+      console.error(error)
+    }
+  }
   return (
     <View
       style={styles.view}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+      <View>
+        <Text variant="headlineSmall">Today's Habits</Text>
+        <Button mode="text" icon="logout" onPress={signOut}>Sign Out</Button>
+      </View>
       {/* <Link href="/login" style={styles.link}>Login</Link> */}
-      <Button mode="text" icon="logout" onPress={signOut}>Sign Out</Button>
+      
     </View>
   );
 }
