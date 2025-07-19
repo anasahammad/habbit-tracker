@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import {  Query } from "react-native-appwrite";
 import { Button, Surface, Text, } from "react-native-paper";
@@ -6,11 +6,12 @@ import { client, DATABASE_ID, databases, HABIT_COLLECTION_ID, RealTimeResponse }
 import { useAuth } from "../lib/auth-context";
 import { Habit } from "../types/database.type";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Swipeable } from "react-native-gesture-handler";
 
 export default function Index() {
   const {signOut, user} = useAuth()
   const [habits, setHabits] = useState<Habit[]>()
-
+  const swipeableRef = useRef<{[key:string]: Swipeable | null}>({})
   useEffect(()=>{
   
    if(user){
@@ -43,6 +44,18 @@ export default function Index() {
       console.error(error)
     }
   }
+
+
+  const renderLeftActions = ()=>(
+    <View style={styles.swipeActionsLeft}>
+      <MaterialCommunityIcons name="trash-can-outline" size={32} color={"#fff"}/>
+    </View>
+  )
+  const renderRightActions = ()=>(
+    <View style={styles.swipeActionsRight}>
+      <MaterialCommunityIcons name="check-circle-outline" size={32} color={"#fff"}/>
+    </View>
+  )
   return (
     <View
       style={styles.container}
@@ -59,8 +72,17 @@ export default function Index() {
       {habits?.length === 0 ? <View style={styles.emptyState}>
         <Text style={styles.emptyStateText}>No Habits yet. Add Your first Habit</Text>
       </View> : habits?.map((habit, index)=>(
+        <Swipeable ref={(ref)=>{
+          swipeableRef.current[habit.$id] = ref
+        }}
+        key={index}
+        overshootLeft={false}
+        overshootRight={false}
+        renderLeftActions={renderLeftActions}
+        renderRightActions={renderRightActions}
+        >
        <Surface style={styles.card} elevation={0}>
-         <View key={index} style={styles.cardContent}>
+         <View  style={styles.cardContent}>
           <Text style={styles.cardTitle}>{habit.title}</Text>
           <Text style={styles.cardDescription}>{habit.description}</Text>
           <View style={styles.cardFooter}>
@@ -75,6 +97,7 @@ export default function Index() {
           </View>
         </View>
        </Surface>
+       </Swipeable>
       ))}
       </ScrollView>
     </View>
@@ -165,6 +188,27 @@ emptyState: {
 },
 emptyStateText: {
   color: "#666666"
-}
+},
+
+swipeActionsLeft:{
+  justifyContent: "center",
+  alignItems: "flex-start",
+  flex: 1,
+  backgroundColor: "#e53935",
+  borderRadius:18,
+  marginBottom: 18, 
+  marginTop: 2,
+  paddingLeft: 16
+},
+swipeActionsRight:{
+    justifyContent: "center",
+  alignItems: "flex-end",
+  flex: 1,
+backgroundColor: "#4caf50",
+borderRadius:18,
+  marginBottom: 18, 
+  marginTop: 2,
+  paddingRight: 16
+},
       
 })
