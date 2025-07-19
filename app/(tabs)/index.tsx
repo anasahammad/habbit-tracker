@@ -12,11 +12,14 @@ export default function Index() {
   const {signOut, user} = useAuth()
   const [habits, setHabits] = useState<Habit[]>()
   const swipeableRef = useRef<{[key:string]: Swipeable | null}>({})
+
   useEffect(()=>{
   
    if(user){
-     const channel = `databases.${DATABASE_ID}.collections.${HABIT_COLLECTION_ID}.documents`
+     const channel = `databases.${DATABASE_ID}.collections.${HABIT_COLLECTION_ID}.documents.`
     const habitSubscription = client.subscribe(channel, (response:RealTimeResponse)=>{
+
+      console.log("events ", response.events)
       if(response.events.includes("databases.*.collections.*.documents.*.create")){
         fetchHabits()
       } else if(response.events.includes("databases.*.collections.*.documents.*.update")){
@@ -34,6 +37,7 @@ export default function Index() {
       }
    }
   }, [user])
+
   const fetchHabits =async  ()=>{
     try {
        const response =  await databases.listDocuments(DATABASE_ID, HABIT_COLLECTION_ID, [Query.equal("user_id", user?.$id ?? '')])
@@ -45,6 +49,16 @@ export default function Index() {
     }
   }
 
+  const handleDeleteHabit =async (id:string)=>{
+    try {
+        await databases.deleteDocument(DATABASE_ID, HABIT_COLLECTION_ID, id)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const handleCompleteHabit =async ()=>{
+
+  }
 
   const renderLeftActions = ()=>(
     <View style={styles.swipeActionsLeft}>
@@ -71,15 +85,26 @@ export default function Index() {
       <ScrollView showsVerticalScrollIndicator={false}>
       {habits?.length === 0 ? <View style={styles.emptyState}>
         <Text style={styles.emptyStateText}>No Habits yet. Add Your first Habit</Text>
-      </View> : habits?.map((habit, index)=>(
+      </View> : habits?.map((habit)=>(
         <Swipeable ref={(ref)=>{
           swipeableRef.current[habit.$id] = ref
         }}
-        key={index}
+        key={habit.$id}
         overshootLeft={false}
         overshootRight={false}
         renderLeftActions={renderLeftActions}
         renderRightActions={renderRightActions}
+
+        onSwipeableOpen={(direction)=>{
+          if(direction === "left"){
+            handleDeleteHabit(habit.$id)
+            swipeableRef.current[habit.$id]?.close()
+          } else if(direction === "right"){
+            handleCompleteHabit()
+          }
+
+          
+        }}
         >
        <Surface style={styles.card} elevation={0}>
          <View  style={styles.cardContent}>

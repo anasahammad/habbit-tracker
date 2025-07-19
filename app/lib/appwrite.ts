@@ -8,6 +8,7 @@ export const databases = new Databases(client);
 
 export const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DB_ID ?? '';
 export const HABIT_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_HABIT_COLLECTION_ID ?? '';
+export const COMPLETING_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_HABIT_COMPLETIONS_COLLECTION_ID ?? '';
 
 export interface RealTimeResponse {
     events: string[],
