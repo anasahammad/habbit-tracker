@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import {  Query } from "react-native-appwrite";
+import {  ID, Query } from "react-native-appwrite";
 import { Button, Surface, Text, } from "react-native-paper";
-import { client, DATABASE_ID, databases, HABIT_COLLECTION_ID, RealTimeResponse } from "../lib/appwrite";
+import { client, COMPLETING_COLLECTION_ID, DATABASE_ID, databases, HABIT_COLLECTION_ID, RealTimeResponse } from "../lib/appwrite";
 import { useAuth } from "../lib/auth-context";
 import { Habit } from "../types/database.type";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -56,8 +56,28 @@ export default function Index() {
       console.log(error)
     }
   }
-  const handleCompleteHabit =async ()=>{
+  const handleCompleteHabit =async (id:string)=>{
 
+    if(!user) return
+    try {
+
+      const currentDate = new Date().toISOString()
+        await databases.createDocument(DATABASE_ID, COMPLETING_COLLECTION_ID, ID.unique(), {
+          user_id: user?.$id,
+          habit_id: id,
+          completedAt: currentDate
+        })
+
+        const habit = habits?.find((h)=>h.$id === id)
+        if(!habit) return
+
+        await databases.updateDocument(DATABASE_ID, HABIT_COLLECTION_ID, id, {
+          streak_count: habit.streak_count + 1,
+          last_completed: currentDate
+        })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const renderLeftActions = ()=>(
@@ -100,7 +120,8 @@ export default function Index() {
             handleDeleteHabit(habit.$id)
             swipeableRef.current[habit.$id]?.close()
           } else if(direction === "right"){
-            handleCompleteHabit()
+            handleCompleteHabit(habit.$id)
+            swipeableRef.current[habit.$id]?.close()
           }
 
           
